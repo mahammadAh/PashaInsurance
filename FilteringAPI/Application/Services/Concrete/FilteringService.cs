@@ -7,6 +7,9 @@ namespace Application.Services.Concrete;
 public class FilteringService : IFilteringService
 {
     private readonly FilteringOptions _options;
+    
+    // Размер блока для обработки больших текстов (1 MB)
+    private const int TextBlockSize = 1024 * 1024;
 
     public FilteringService(IOptions<FilteringOptions> options)
     {
@@ -35,6 +38,53 @@ public class FilteringService : IFilteringService
         }
 
         return filteredText;
+    }
+
+    public async Task<string> FilterAsync(string text)
+    {
+        // Если текст маленький, обрабатываем как обычно
+        if (text.Length <= TextBlockSize)
+        {
+            return await Task.Run(() => Filter(text));
+        }
+        
+        // Для больших текстов обрабатываем по блокам
+        return await FilterLargeTextAsync(text);
+    }
+    
+    private async Task<string> FilterLargeTextAsync(string text)
+    {
+        var result = new List<string>();
+        var startIndex = 0;
+        
+        while (startIndex < text.Length)
+        {
+            // Определяем конец блока (поиск ближайшего пробела)
+            var endIndex = Math.Min(startIndex + TextBlockSize, text.Length);
+            
+            // Если не конец текста, ищем последний пробел в блоке
+            if (endIndex < text.Length)
+            {
+                var lastSpaceIndex = text.LastIndexOf(' ', endIndex);
+                if (lastSpaceIndex > startIndex)
+                {
+                    endIndex = lastSpaceIndex;
+                }
+            }
+            
+            // Извлекаем блок текста
+            var textBlock = text.Substring(startIndex, endIndex - startIndex);
+            
+            // Фильтруем блок
+            var filteredBlock = await Task.Run(() => Filter(textBlock));
+            result.Add(filteredBlock);
+            
+            // Переходим к следующему блоку
+            startIndex = endIndex + 1;
+        }
+        
+        // Соединяем все отфильтрованные блоки
+        return string.Join(" ", result);
     }
     
     

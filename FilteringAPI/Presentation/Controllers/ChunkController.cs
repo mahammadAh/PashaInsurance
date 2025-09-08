@@ -31,13 +31,14 @@ public class ChunkController : ControllerBase
     [HttpPost("upload")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
-    public async Task<ActionResult<string>> Upload(Chunk chunk)
+    public async Task<ActionResult<object>> Upload(Chunk chunk)
     {
         try
         {
             await _chunkService.UploadChunkAsync(chunk);
 
-            return Ok(chunk?.IsLastChunk == true ? "Accepted" : "Waiting for next chunk");
+            var status = chunk?.IsLastChunk == true ? "Accepted" : "Waiting for next chunk";
+            return Ok(new { status = status });
         }
         catch (Exception ex)
         {

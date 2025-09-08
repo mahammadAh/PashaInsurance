@@ -1,4 +1,5 @@
 using Application.Services.Concrete;
+using Domain.Models;
 using Domain.Options;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -77,5 +78,35 @@ public class FilteringServiceTests
         Assert.Contains("with", resultWords);
         Assert.Contains("content", resultWords);
         Assert.Contains("and", resultWords);
+    }
+
+    [Fact]
+    public void QueueService_ShouldAddAndRetrieveItems()
+    {
+        // Arrange
+        var queueService = new QueueService();
+        var fullText = new FullText { UploadId = "test-123", Data = "test data" };
+
+        // Act
+        queueService.AddToQueue("test-123", fullText);
+        var result = queueService.TryGetNext();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("test-123", result.UploadId);
+        Assert.Equal("test data", result.Data);
+    }
+
+    [Fact]
+    public void QueueService_ShouldReturnNullWhenEmpty()
+    {
+        // Arrange
+        var queueService = new QueueService();
+
+        // Act
+        var result = queueService.TryGetNext();
+
+        // Assert
+        Assert.Null(result);
     }
 }

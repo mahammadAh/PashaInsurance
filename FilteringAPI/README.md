@@ -83,9 +83,26 @@ Application (Services + Background Processing)
 Domain (Models + Options)
 ```
 
-- **Clean Architecture** with layer separation
-- **Background Service** for asynchronous processing
-- **In-memory** storage for simplicity
+### Layer Details:
+
+**Presentation Layer:**
+- `ChunkController` - handles HTTP requests for chunk upload and result retrieval
+- `Program.cs` - application startup and dependency injection configuration
+
+**Application Layer:**
+- `ChunkService` - orchestrates chunk processing workflow
+- `UploadBufferService` - manages chunk buffering and reassembly
+- `QueueService` - handles background task queue using ConcurrentQueue
+- `FilteringService` - applies filtering algorithms (Levenshtein/Jaro-Winkler)
+- `ResultService` - stores filtered results in memory
+- `FilteringBackgroundService` - processes queue asynchronously
+
+**Domain Layer:**
+- `Chunk` - data model for text chunks
+- `FullText` - data model for complete text
+- `FilteringOptions` - configuration for filtering parameters
+
+
 
 
 
